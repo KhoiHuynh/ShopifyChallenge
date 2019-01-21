@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.collection_row.view.*
 
 class CollectionsAdapter(private val collectionFeed: Models.CollectionFeed): RecyclerView.Adapter<CustomViewHolder>() {
@@ -16,13 +17,17 @@ class CollectionsAdapter(private val collectionFeed: Models.CollectionFeed): Rec
         return CustomViewHolder(cell)
     }
 
-    override fun onBindViewHolder(viewHoler: CustomViewHolder, index: Int) {
+    override fun onBindViewHolder(viewHolder: CustomViewHolder, index: Int) {
         val collectionAtIndex = collectionFeed.custom_collections[index]
         val collectionTitle = collectionAtIndex.title
-        viewHoler.view.textView_collection_title.text = collectionTitle
+        val collectionUrl = collectionFeed.custom_collections[index].image.src
+        val thumbnailCollentions = viewHolder.view.imageView_collections
 
+        viewHolder.view.textView_collection_title.text = collectionTitle
         //this gets passed in the constructor of 'CustomViewHolder' Class
-        viewHoler.collection = collectionAtIndex
+        viewHolder.collection = collectionAtIndex
+        Picasso.get().load(collectionUrl).into(thumbnailCollentions)
+
     }
 
     override fun getItemCount(): Int {

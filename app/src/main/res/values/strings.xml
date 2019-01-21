@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ShopifyChallenge</string>
+    <string name="collection_image">Collection Image</string>
+    <string name="product_images">Product Images</string>
 </resources>
