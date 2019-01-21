@@ -1,17 +1,13 @@
 package com.example.khoi.shopifychallenge
 
 import android.content.Intent
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.collection_row.view.*
 
-private val TAG = "123"
-class CollectionsAdapter(private val collectionFeed: CollectionsListActivity.CollectionFeed): RecyclerView.Adapter<CustomViewHolder>() {
-
+class CollectionsAdapter(private val collectionFeed: Models.CollectionFeed): RecyclerView.Adapter<CustomViewHolder>() {
 
     // this basicly creates the cells for our recyclerView (list)
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): CustomViewHolder {
@@ -35,20 +31,18 @@ class CollectionsAdapter(private val collectionFeed: CollectionsListActivity.Col
 }
 
 class CustomViewHolder(
-        val view : View, var collection: CollectionsListActivity.Collection? = null): RecyclerView.ViewHolder(view){
+        val view : View, var collection: Models.Collection? = null): RecyclerView.ViewHolder(view){
 
     companion object {
         private val TAG = "CustomViewHolder"
-        val collection_title = "collection_title"
-        val collection_id = "collection_id"
+        const val collection_title = "collection_title"
+        const val collection_id = "collection_id"
     }
     init {
         view.setOnClickListener {
-            Log.d(CustomViewHolder.TAG, "Clicked a row")
             val intent = Intent(view.context, CollectionsDetailActivity::class.java)
             intent.putExtra(collection_title, collection?.title)
             intent.putExtra(collection_id, collection?.id)
-
             view.context.startActivity(intent)
         }
     }

@@ -20,21 +20,20 @@ class CollectionsDetailActivity : AppCompatActivity() {
         setContentView(R.layout.activity_collections_detail)
 
         recyclerView_details.layoutManager = LinearLayoutManager(this@CollectionsDetailActivity)
-        recyclerView_details.addItemDecoration(DividerItemDecoration(recyclerView_details.context, DividerItemDecoration.VERTICAL))
+        recyclerView_details.addItemDecoration(
+            DividerItemDecoration(recyclerView_details.context, DividerItemDecoration.VERTICAL))
 
         // Receiving the information from previous activity throuh an intent
         val collectionTitle = intent.getStringExtra(CustomViewHolder.collection_title)
-        Log.d(CollectionsDetailActivity.TAG, collectionTitle)
+        val collectionId = intent.getStringExtra(CustomViewHolder.collection_id)
+
         supportActionBar?.title = collectionTitle
 
-        val collectionId = intent.getStringExtra(CustomViewHolder.collection_id)
-        Log.d(CollectionsDetailActivity.TAG, collectionId)
-
-        fetchJSON(collectionId)
+        fetchJSON(collectionId, collectionTitle)
 
     }
 
-    private fun fetchJSON(collectionId: String){
+    private fun fetchJSON(collectionId: String, collectionTitle: String){
         Log.d(CollectionsDetailActivity.TAG, "Attempting to fetch JSON")
         val url = "https://shopicruit.myshopify.com/admin/collects.json?collection_id=$collectionId&page=1&access_token=c32313df0d0ef512ca64d5b336a0d7c6"
 
@@ -43,20 +42,14 @@ class CollectionsDetailActivity : AppCompatActivity() {
         client.newCall(request).enqueue(object: Callback {
             override fun onResponse(call: Call, response: Response) {
                 val body = response.body()?.string()
-                Log.d(CollectionsDetailActivity.TAG, "Response for Collection ID: $collectionId:\n $body")
-
                 val gson = GsonBuilder().create()
-                val products = gson.fromJson(body, CollectionsDetailActivity.Products::class.java)
+                val collects = gson.fromJson(body, Models.Collects::class.java)
 
                 val productIdArray = ArrayList<String>()
-                for (collect in products.collects){
+                for (collect in collects.collects){
                     productIdArray.add(collect.product_id)
                 }
-                fetchAllProducts(productIdArray)
-
-                runOnUiThread {
-                    recyclerView_details.adapter = DetailsAdapter(products)
-                }
+                fetchAllProducts(productIdArray, collects, collectionTitle)
             }
 
             override fun onFailure(call: Call, e: IOException) {
@@ -65,7 +58,7 @@ class CollectionsDetailActivity : AppCompatActivity() {
         })
     }
 
-    private fun fetchAllProducts(productIdArray: ArrayList<String>){
+    private fun fetchAllProducts(productIdArray: ArrayList<String>, collects: Models.Collects, collectionTitle: String){
         var stringProductIds = ""
         for (collect in productIdArray){
             stringProductIds += "$collect,"
@@ -74,7 +67,7 @@ class CollectionsDetailActivity : AppCompatActivity() {
         {
             stringProductIds = stringProductIds.substring(0, stringProductIds.length - 1)
         }
-        println("My new String $stringProductIds")
+
         val url = "https://shopicruit.myshopify.com/admin/products.json?ids=$stringProductIds&page=1&access_token=c32313df0d0ef512ca64d5b336a0d7c6"
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
@@ -83,20 +76,16 @@ class CollectionsDetailActivity : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 val body = response.body()?.string()
                 val gson = GsonBuilder().create()
-                val allProducts = gson.fromJson(body, CollectionsDetailActivity.Products::class.java)
+                val products = gson.fromJson(body, Models.Products::class.java)
+
+                runOnUiThread {
+                    recyclerView_details.adapter = DetailsAdapter(collects, products, collectionTitle)
+                }
             }
 
             override fun onFailure(call: Call, e: IOException) {
                 Log.d(CollectionsDetailActivity.TAG, "Failed request for all products")
             }
-
         })
-
-
     }
-
-
-    class Products(val collects: List<Collect>)
-
-    class Collect(val product_id: String)
 }
